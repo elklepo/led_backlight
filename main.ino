@@ -16,9 +16,12 @@
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 
+#include "include/WifiConnection.h"
+#include "include/WifiCredentials.h"
+
 // Which pin on the Arduino is connected to the NeoPixels?
 // On a Trinket or Gemma we suggest changing this to 1:
-#define LED_PIN    5
+#define LED_PIN 5
 
 // How many NeoPixels are attached to the Arduino?
 #define LED_COUNT 8
@@ -36,14 +39,22 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRBW + NEO_KHZ800);
 
 
 // setup() function -- runs once at startup --------------------------------
+std::unique_ptr<WifiConnection> wifi_conn;
 
-void setup() {
+void setup() {  
   // These lines are specifically to support the Adafruit Trinket 5V 16 MHz.
   // Any other board, you can remove this part (but no harm leaving it):
 #if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
   clock_prescale_set(clock_div_1);
 #endif
   // END of Trinket-specific code.
+
+  pinMode(16, OUTPUT);  
+
+  Serial.begin(115200);         // Start the Serial communication to send messages to the computer
+  delay(2000);
+  Serial.println('\n');
+  wifi_conn = std::unique_ptr<WifiConnection>(new WifiConnection(WIFI_SSID, WIFI_PASS, 80,60));
 
   strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();            // Turn OFF all pixels ASAP
@@ -54,18 +65,19 @@ void setup() {
 // loop() function -- runs repeatedly as long as board is on ---------------
 
 void loop() {
+  wifi_conn->handleClient(); 
   // Fill along the length of the strip in various colors...
-  colorWipe(strip.Color(255,   0,   0), 50); // Red
-  colorWipe(strip.Color(  0, 255,   0), 50); // Green
-  colorWipe(strip.Color(  0,   0, 255), 50); // Blue
+  //colorWipe(strip.Color(255,   0,   0), 50); // Red
+  //colorWipe(strip.Color(  0, 255,   0), 50); // Green
+  //colorWipe(strip.Color(  0,   0, 255), 50); // Blue
 
   // Do a theater marquee effect in various colors...
-  theaterChase(strip.Color(127, 127, 127), 50); // White, half brightness
-  theaterChase(strip.Color(127,   0,   0), 50); // Red, half brightness
-  theaterChase(strip.Color(  0,   0, 127), 50); // Blue, half brightness
+  //theaterChase(strip.Color(127, 127, 127), 50); // White, half brightness
+  //theaterChase(strip.Color(127,   0,   0), 50); // Red, half brightness
+  //theaterChase(strip.Color(  0,   0, 127), 50); // Blue, half brightness
 
-  rainbow(10);             // Flowing rainbow cycle along the whole strip
-  theaterChaseRainbow(50); // Rainbow-enhanced theaterChase variant
+  //rainbow(10);             // Flowing rainbow cycle along the whole strip
+  //theaterChaseRainbow(50); // Rainbow-enhanced theaterChase variant
 }
 
 
@@ -84,6 +96,7 @@ void colorWipe(uint32_t color, int wait) {
   }
 }
 
+/*
 // Theater-marquee-style chasing lights. Pass in a color (32-bit value,
 // a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
 // between frames.
@@ -146,3 +159,4 @@ void theaterChaseRainbow(int wait) {
     }
   }
 }
+*/
